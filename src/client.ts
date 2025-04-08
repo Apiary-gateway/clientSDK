@@ -3,7 +3,7 @@ import { AllModels, InternalMessage, ModelForProvider, RoutingConfig, SupportedL
 
 class GatewayError extends Error {}
 
-interface SDKConfig {
+interface ClientConfig {
   apiKey: string;
   baseUrl: string;
   routingConfig: RoutingConfig;
@@ -15,11 +15,11 @@ client to interact with the LLM Gateway, and for requesting chat completions. */
 
 export class GatewayClient {
   private httpRequest: AxiosInstance;
-  private chatCompletionPath: string;
+  private readonly chatCompletionPath: string;
   private routingConfig?: RoutingConfig;
   private userId?: string;
   
-  constructor(config: SDKConfig) {
+  constructor(config: ClientConfig) {
     this.httpRequest = axios.create({
       baseURL: config.baseUrl,
       headers: {
@@ -77,3 +77,5 @@ export class GatewayClient {
     }
   }
 }
+
+export default GatewayClient;
