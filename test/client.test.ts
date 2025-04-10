@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import axios, { AxiosInstance } from "axios";
 import GatewayClient from "../src/client";
-import { InternalMessage, RoutingConfig } from "../src/types";
 
 vi.mock('axios');
 const mockAxiosInstance = {
@@ -9,7 +8,16 @@ const mockAxiosInstance = {
   post: vi.fn(),
 } as unknown as AxiosInstance;
 
-const userMessage: InternalMessage[] = [{role: 'user', content: 'This is a test'}];
+const configWithUserId = {
+  baseUrl: 'https://test.com',
+  apiKey: 'test-api-key',
+  userId: 'test-user-id'
+};
+
+const configWithoutUserId = {
+  baseUrl: 'https://test.com',
+  apiKey: 'test-api-key',
+};
 
 describe('GatewayClient', () => {
   beforeEach(() => {
@@ -18,51 +26,54 @@ describe('GatewayClient', () => {
   
   describe('constructor', () => {
     it('correctly initializes the httpRequest property', async () => {
-      const config = {
-        baseUrl: 'https://test.com',
-        apiKey: 'test-api-key',
-        userId: 'test-user-id'
-      };
-
       vi.mocked(axios.create).mockReturnValue(mockAxiosInstance);
 
-      const gateway = new GatewayClient(config);
+      const gateway = new GatewayClient(configWithUserId);
 
       expect (axios.create).toHaveBeenCalledWith({
-        baseURL: config.baseUrl,
+        baseURL: configWithUserId.baseUrl,
         headers: {
-          'x-api-key': config.apiKey
+          'x-api-key': configWithUserId.apiKey
         }
       })
 
       expect(gateway.httpRequest).toBe(mockAxiosInstance);
-      // test behavior if `httpRequest` is private
-      // vi.mocked(mockAxiosInstance.post).mockResolvedValue({data: 'test'});
-      // await gateway.chatCompletion(userMessage);
-      // expect(mockAxiosInstance.post).toHaveBeenCalled();
     });
 
     it('correctly initializes the `userId` property if an ID is provided', () => {
-      const config = {
-        baseUrl: 'https://test.com',
-        apiKey: 'test-api-key',
-        userId: 'test-user-id',
-      };
-
-      const gateway = new GatewayClient(config);
+      const gateway = new GatewayClient(configWithUserId);
 
       expect(gateway.userId).toBe('test-user-id');
     });
 
     it('initializes the `userId` property as undefined if no ID is provided', () => {
-      const config = {
-        baseUrl: 'https://test.com',
-        apiKey: 'test-api-key',
-      };
-
-      const gateway = new GatewayClient(config);
+      const gateway = new GatewayClient(configWithoutUserId);
 
       expect(gateway.userId).toBeUndefined;
+    });
+  });
+
+  describe('chatCompletion', () => {
+    it('makes a POST request with the correct arguments', async () => {
+      vi.mocked(axios.create).mockReturnValue(mockAxiosInstance);
+
+      const gateway = new GatewayClient(configWithUserId);
+
+      vi.mocked(gateway.httpRequest.post).mockResolvedValue({ data: {} });
+      await gateway.chatCompletion(
+        'This is a test',
+        '1744301407905',
+        'openai',
+        'gpt-4o-mini'
+      );
+
+      expect(gateway.httpRequest.post).toHaveBeenCalledWith(gateway.chatCompletionPath, {
+        prompt: 'This is a test',
+        threadID: '1744301407905',
+        provider: 'openai',
+        model: 'gpt-4o-mini',
+        userId: 'test-user-id',
+      });
     });
   });
 });

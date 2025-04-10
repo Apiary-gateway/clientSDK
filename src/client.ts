@@ -1,7 +1,5 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
-import { AllModels, InternalMessage, ModelForProvider, RoutingConfig, SupportedLLMs } from './types';
-
-class GatewayError extends Error {}
+import { AllModels, SupportedLLMs } from './types';
 
 interface ClientConfig {
   apiKey: string;
@@ -31,8 +29,12 @@ export class GatewayClient {
   /**
    * The method `chatCompletion` sends a request to the LLM Gateway for a chat completion
    * based on the provided configuration details.
-   * @param {InternalMessage[]} messages - The `messages` parameter is an array of messages 
-   * that may contain a 'system' prompt as well as messages from the 'user' and the 'assistant' roles.
+   * @param {string} prompt - The `prompt` parameter is a string containing the 
+   * user prompt.
+   * @param {string} threadID - The `threadID` parameter is a string identifying
+   * the conversation thread. It is optional. If `threadID` is passed, then the 
+   * Gateway will associate the given user prompt with the LLM conversation referenced
+   * by `threadID`.  
    * @param {SupportedLLMs} provider - The `provider` parameter is a string indicating
    * the LLM provider you'd like to use (ex. 'openai', 'anthropic'). It is optional.
    * This information may also be provided in your routing config file.
@@ -42,21 +44,42 @@ export class GatewayClient {
    * @returns A Promise that either resolves to an object containing the returned response
    * text (either from an LLM call or a cache hit), token usage, LLM provider and 
    * model used, and potentially other metadata, or rejects with an error message.
+   * The response object has the shape: {
+   *  threadID: string,
+   *  response: {
+   *    text: string,
+   *    usage: {
+          prompt_tokens: number,
+          completion_tokens: number,
+          total_tokens: number,
+          prompt_tokens_details: {
+            cached_tokens: number,
+            audio_tokens: number
+          },
+          completion_tokens_details: {
+            reasoning_tokens: number,
+            audio_tokens: number,
+            accepted_prediction_tokens: number,
+            rejected_prediction_tokens: number
+          }
+        }
+   *    provider: string,
+   *    model: string,
+   *    log:
+   *  }
+   * }
    */
 
   async chatCompletion(
-    messages: Array<InternalMessage>,
+    prompt: string,
+    threadID?: string,
     provider?: SupportedLLMs,
     model?: AllModels,
   ) {
     try {
-      const lastUserMessage = messages.findLast(message => message.role === 'user');
-      if (!lastUserMessage) {
-        throw new GatewayError("User message is required.");
-      }
-    
       const response = await this.httpRequest.post(this.chatCompletionPath, {
-        prompt: lastUserMessage?.content,
+        prompt,
+        threadID,
         provider,
         model,
         userId: this.userId,
@@ -66,11 +89,10 @@ export class GatewayClient {
     } catch (err) {
       if (err instanceof AxiosError) {
         console.error('An Axios error occurred: ', err.message);
-      } else if (err instanceof GatewayError) {
-        console.error('An error occurred with your Gateway setup: ', err.message);
       } else {
         console.error('An error occurred: ', err);
       }
+      throw err;
     }
   }
 }

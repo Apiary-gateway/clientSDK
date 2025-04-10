@@ -1,12 +1,5 @@
 import { MODELS } from "./constants";
 
-export type InternalMessage = {
-    threadID?: string;
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp?: number;
-}
-
 export type SupportedLLMs = keyof typeof MODELS;
 export type ModelForProvider<T extends SupportedLLMs> = typeof MODELS[T][number];
 export type AllModels = typeof MODELS[SupportedLLMs][number];
@@ -18,26 +11,10 @@ export type ProviderModel = {
 // model is the union of the corresponding models for that provider
 // then [SupportedLLMs] indicates that it's just one of those object entries (type is the union of them)
 
-export type WeightedProviderModel = ProviderModel & { weight: number };
-
 export type RequestMetadata = {
     userType?: string;
     region?: string;
 };
-
-export type RoutingCondition = {
-    name: string;
-    query: (meta: RequestMetadata) => boolean;
-    loadBalance: WeightedProviderModel[];
-    fallbackModel?: ProviderModel;
-}
-
-export type RoutingConfig = {
-    conditions?: RoutingCondition[];
-    defaultModel: ProviderModel;
-    fallbackModel: ProviderModel;
-    fallbackOnStatus?: number[];
-}
 
 export type ParsedRequestData = {
     threadID: string;
