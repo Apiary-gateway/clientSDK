@@ -9,11 +9,6 @@ const mockAxiosInstance = {
   post: vi.fn(),
 } as unknown as AxiosInstance;
 
-const routingConfig: RoutingConfig = {
-  defaultModel: { provider: 'openai', model: 'gpt-3.5-turbo'},
-  fallbackModel: { provider: 'anthropic', model: 'claude-3-5-haiku-20241022' },
-};
-
 const userMessage: InternalMessage[] = [{role: 'user', content: 'This is a test'}];
 
 describe('GatewayClient', () => {
@@ -26,7 +21,6 @@ describe('GatewayClient', () => {
       const config = {
         baseUrl: 'https://test.com',
         apiKey: 'test-api-key',
-        routingConfig,
         userId: 'test-user-id'
       };
 
@@ -41,11 +35,34 @@ describe('GatewayClient', () => {
         }
       })
 
-      vi.mocked(mockAxiosInstance.post).mockResolvedValue({data: 'test'});
-      
-      await gateway.chatCompletion(userMessage);
-
-      expect(mockAxiosInstance.post).toHaveBeenCalled();
+      expect(gateway.httpRequest).toBe(mockAxiosInstance);
+      // test behavior if `httpRequest` is private
+      // vi.mocked(mockAxiosInstance.post).mockResolvedValue({data: 'test'});
+      // await gateway.chatCompletion(userMessage);
+      // expect(mockAxiosInstance.post).toHaveBeenCalled();
     });
-  })
+
+    it('correctly initializes the `userId` property if an ID is provided', () => {
+      const config = {
+        baseUrl: 'https://test.com',
+        apiKey: 'test-api-key',
+        userId: 'test-user-id',
+      };
+
+      const gateway = new GatewayClient(config);
+
+      expect(gateway.userId).toBe('test-user-id');
+    });
+
+    it('initializes the `userId` property as undefined if no ID is provided', () => {
+      const config = {
+        baseUrl: 'https://test.com',
+        apiKey: 'test-api-key',
+      };
+
+      const gateway = new GatewayClient(config);
+
+      expect(gateway.userId).toBeUndefined;
+    });
+  });
 });

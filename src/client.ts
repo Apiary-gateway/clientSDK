@@ -6,7 +6,6 @@ class GatewayError extends Error {}
 interface ClientConfig {
   apiKey: string;
   baseUrl: string;
-  routingConfig: RoutingConfig;
   userId?: string;
 }
 
@@ -14,10 +13,9 @@ interface ClientConfig {
 client to interact with the LLM Gateway, and for requesting chat completions. */
 
 export class GatewayClient {
-  private httpRequest: AxiosInstance;
-  private readonly chatCompletionPath: string;
-  private routingConfig?: RoutingConfig;
-  private userId?: string;
+  httpRequest: AxiosInstance;
+  readonly chatCompletionPath: string;
+  userId?: string;
   
   constructor(config: ClientConfig) {
     this.httpRequest = axios.create({
@@ -27,7 +25,6 @@ export class GatewayClient {
       }
     });
     this.chatCompletionPath = '/route';
-    this.routingConfig = config.routingConfig;
     this.userId = config.userId;
   }
 
