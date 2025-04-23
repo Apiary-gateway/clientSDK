@@ -1,8 +1,9 @@
 {
-  "name": "clientsdk",
+  "name": "@apiary-gateway/sdk",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A TypeScript-based client for interacting with Apiary LLM Gateway",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "test": "vitest"
   },
@@ -14,8 +15,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
-    "typedoc": "^0.28.2",
     "typescript": "^5.8.3",
     "vitest": "^3.1.1"
-  }
+  },
+  "files": [
+    "dist/src"
+  ]
 }

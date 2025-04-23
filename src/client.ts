@@ -5,22 +5,38 @@ interface ClientConfig {
   apiKey: string;
   baseUrl: string;
   userId?: string;
+  metadata?: {
+    [key: string]: string | number;
+  };
 }
 
-/* The `GatewayClient` class in TypeScript provides methods for initializing a 
-client to interact with the LLM Gateway, and for requesting chat completions. */
+interface httpHeaders {
+  'x-api-key': string;
+  [header: string]: string | number;
+}
 
-export class GatewayClient {
+/* The `Apiary` class in TypeScript provides methods for initializing an Apiary 
+client to interact with the Apiary LLM Gateway, and for requesting chat completions. */
+
+export class Apiary {
   httpRequest: AxiosInstance;
   readonly chatCompletionPath: string;
   userId?: string;
   
   constructor(config: ClientConfig) {
+    const headers: httpHeaders = {
+      'x-api-key': `${config.apiKey}`
+    };
+
+    if (config.metadata) {
+      for (const field in config.metadata) {
+        headers[`x-${field}`] = config.metadata[field];
+      }
+    }
+    
     this.httpRequest = axios.create({
       baseURL: config.baseUrl,
-      headers: {
-        'x-api-key': `${config.apiKey}`
-      }
+      headers,
     });
     this.chatCompletionPath = '/route';
     this.userId = config.userId;
@@ -97,4 +113,4 @@ export class GatewayClient {
   }
 }
 
-export default GatewayClient;
+export default Apiary;

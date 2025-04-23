@@ -1,7 +1,7 @@
-import { GatewayClient } from "./client";
+import { Apiary } from "./client";
 
 export {
-  GatewayClient,
+  Apiary,
 };
 
-export default GatewayClient;
+export default Apiary;
