@@ -40,7 +40,7 @@ import Apiary from '@apiary-gateway/sdk';
 // Initialize the Apiary client
 const client = new Apiary({
   apiKey: '<YOUR_API_KEY>',
-  baseUrl: 'https://<YOUR_GATEWAY_URL>.com',
+  baseUrl: 'https://<YOUR_GATEWAY_URL>.com/dev',
   // Optionally include a userId to partition cache responses based on userId
   userId: '<userId>',
   // Optionally include a metadata object with your custom routing configuration groups
