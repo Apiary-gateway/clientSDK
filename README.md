@@ -45,7 +45,7 @@ const client = new Apiary({
   userId: '<userId>',
   // Optionally include a metadata object with your custom routing configuration groups
   metadata: {
-    user-type: 'pro-users'
+    'user-type': 'pro-users'
   },
 });
 
